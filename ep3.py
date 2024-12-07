@@ -30,8 +30,19 @@ class Partida:
         return Peca(random.choice(tipos), self.colunas//2 - 2)
     
     def mover_peca(self, dx, dy):
-        self.peca_atual.x += dx
-        self.peca_atual.y += dy
+        if self._pode_mover(dx, dy):
+            self.peca_atual.x += dx
+            self.peca_atual.y += dy
+
+
+    def _pode_mover(self, dx, dy):
+        for i, row in enumerate(self.peca_atual.matriz):
+            for j, bloco in enumerate(row):
+                if bloco == "#":
+                    nx, ny = self.peca_atual.x + i + dx, self.peca_atual.y + j + dy
+                    if nx >= self.linhas or ny < 0 or ny >= self.colunas or self.tabuleiro[nx][ny] == "#":
+                        return False
+        return True
 
     def imprimir_tabuleiro(self):
         tabuleiro_temporario = [row[:] for row in self.tabuleiro]
