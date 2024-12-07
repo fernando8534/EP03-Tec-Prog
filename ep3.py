@@ -34,6 +34,7 @@ class Partida:
         #Gera o tabuleiro vazio
         self.tabuleiro = [["." for _ in range(colunas)] for _ in range(linhas)]
         self.peca_atual = self._gerar_peca()
+        self.game_over = False
 
     def _gerar_peca(self):
         #Gera a peça aleatória
@@ -75,6 +76,9 @@ class Partida:
                     self.tabuleiro[self.peca_atual.x + i][self.peca_atual.y + j] = "#"
         #Gera a nova peça após de fixar a antiga
         self.peca_atual = self._gerar_peca()
+        #Checa se cabe a nova peça
+        if not self._pode_mover(0, 0):  
+            self.game_over = True
 
     def imprimir_tabuleiro(self):
         #Imprime o estado do tabuleiro com a peça que o usuário está movimentando
@@ -96,7 +100,7 @@ class Jogo:
 
     def iniciar(self):
         os.system('cls||clear')
-        while True:
+        while not(self.partida.game_over):
             print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'q' = Sair")
             self.partida.imprimir_tabuleiro()
             key = readchar.readkey()
@@ -115,6 +119,8 @@ class Jogo:
                 print("Saindo do jogo.")
                 return
             os.system('cls||clear')
+        self.partida.imprimir_tabuleiro()
+        print("Fim de partida!")
 
 def iniciar_partida():
     linhas = int(input("Digite o número de linhas da tela do jogo: "))
@@ -124,25 +130,25 @@ def iniciar_partida():
     
 
 def carregar_partida():
+    os.system('cls||clear')
     print("Hello world")
 
 def ver_melhores_pontuacoes():
+    os.system('cls||clear')
     print("Hello world")
 
 os.system('cls||clear')
-print("*** Jogo Textris - um tetris em modo texto ***")
 Sair = False
 while(not(Sair)):
+    print("*** Jogo Textris - um tetris em modo texto ***")
     print("Opções do jogo:")
     print("- <i> para iniciar uma nova partida")
     print("- <c> para carregar uma partida gravada e continuá-la")
     print("- <p> para ver as 10 melhores pontuações")
     print("- <s> para sair do jogo")
     entrada = input("Digite a opção desejada: ")
-    os.system('cls||clear')
     if(entrada != "i" and entrada != "c" and entrada != "p" and entrada != "s"):
         print("Entrada inválida, tente novamente")
-
     if entrada == "i":
         iniciar_partida()
     elif entrada == "c":
