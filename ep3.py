@@ -98,8 +98,6 @@ def iniciar_partida():
     partida = Partida(linhas, colunas)
     jogo = Jogo(linhas, colunas)
     jogo.iniciar()
-
-    partida.imprimir_tabuleiro()
     
 
 def carregar_partida():
