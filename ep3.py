@@ -35,6 +35,7 @@ class Partida:
         self.tabuleiro = [["." for _ in range(colunas)] for _ in range(linhas)]
         self.peca_atual = self._gerar_peca()
         self.game_over = False
+        self.pontuacao = 0
 
     def _gerar_peca(self):
         #Gera a peça aleatória
@@ -74,11 +75,18 @@ class Partida:
             for j, bloco in enumerate(row):
                 if bloco == "#":
                     self.tabuleiro[self.peca_atual.x + i][self.peca_atual.y + j] = "#"
-        #Gera a nova peça após de fixar a antiga
+        #Gera a nova peça após de fixar a antiga e remove as linhas completas
         self.peca_atual = self._gerar_peca()
+        self._remover_linhas_completas()
         #Checa se cabe a nova peça
         if not self._pode_mover(0, 0):  
             self.game_over = True
+
+    def _remover_linhas_completas(self):
+        linhas_incompletas = [row for row in self.tabuleiro if "." in row]
+        removidas = self.linhas - len(linhas_incompletas)
+        self.pontuacao += removidas
+        self.tabuleiro = [["." for _ in range(self.colunas)] for _ in range(removidas)] + linhas_incompletas
 
     def imprimir_tabuleiro(self):
         #Imprime o estado do tabuleiro com a peça que o usuário está movimentando
@@ -95,16 +103,16 @@ class Partida:
             print("".join(row))
         
 class Jogo:
-    def __init__(self, linhas, colunas):
+    def __init__(self, linhas, colunas, jogador):
         self.partida = Partida(linhas, colunas)
 
     def iniciar(self):
         os.system('cls||clear')
         while not(self.partida.game_over):
-            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'q' = Sair")
             self.partida.imprimir_tabuleiro()
+            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'q' = Sair")
+            print("Pontuação = ", self.partida.pontuacao)
             key = readchar.readkey()
-
             if key == "a":
                 self.partida.mover_peca(0, -1)
             elif key == "d":
@@ -116,17 +124,42 @@ class Jogo:
             elif key == "e":
                 self.partida.rotacionar_peca("L")
             elif key == "q":
-                print("Saindo do jogo.")
-                return
+                print("Saindo do jogo. \n")
+                self.partida.game_over = True
             os.system('cls||clear')
+
         self.partida.imprimir_tabuleiro()
         print("Fim de partida!")
+        print("Pontuação final: ", self.partida.pontuacao, "\n")
+
+
+class Ranking:
+    def __init__(self):
+        self.rank = [[i for i in range(-1, 1)] for _ in range(10)]
+    
+    def atualizar_ranking(self, jogador, pontuacao):
+        for i in range (10):
+            if pontuacao > self.rank[i][0]:
+                for j in range (8, i - 1, -1):
+                        self.rank[j + 1] = self.rank[j]
+                self.rank[i] = [pontuacao, jogador]
+                break
+    
+    def mostrar_ranking(self):
+        for i in range(10):
+            if(-1 == self.rank[i][0]):
+                print(i + 1, ". " , sep="")
+            else:
+                print(i + 1, ". ", self.rank[i][0], " ", self.rank[i][1], sep="")
+
 
 def iniciar_partida():
+    jogador = input("Digite o nome do jogador: ")
     linhas = int(input("Digite o número de linhas da tela do jogo: "))
     colunas = int(input("Digite o número de colunas da tela do jogo: "))
-    jogo = Jogo(linhas, colunas)
+    jogo = Jogo(linhas, colunas, jogador)
     jogo.iniciar()
+    rank.atualizar_ranking(jogador, jogo.partida.pontuacao)
     
 
 def carregar_partida():
@@ -135,8 +168,11 @@ def carregar_partida():
 
 def ver_melhores_pontuacoes():
     os.system('cls||clear')
-    print("Hello world")
+    print("*** Jogo Textris - Melhores pontuações ***")
+    rank.mostrar_ranking()
+    print()
 
+rank = Ranking()
 os.system('cls||clear')
 Sair = False
 while(not(Sair)):
