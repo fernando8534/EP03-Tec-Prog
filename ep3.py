@@ -33,7 +33,8 @@ class Partida:
         if self._pode_mover(dx, dy):
             self.peca_atual.x += dx
             self.peca_atual.y += dy
-
+        elif dx == 1: 
+            self._fixar_peca()
 
     def _pode_mover(self, dx, dy):
         for i, row in enumerate(self.peca_atual.matriz):
@@ -43,6 +44,13 @@ class Partida:
                     if nx >= self.linhas or ny < 0 or ny >= self.colunas or self.tabuleiro[nx][ny] == "#":
                         return False
         return True
+
+    def _fixar_peca(self):
+        for i, row in enumerate(self.peca_atual.matriz):
+            for j, bloco in enumerate(row):
+                if bloco == "#":
+                    self.tabuleiro[self.peca_atual.x + i][self.peca_atual.y + j] = "#"
+        self.peca_atual = self._gerar_peca()
 
     def imprimir_tabuleiro(self):
         tabuleiro_temporario = [row[:] for row in self.tabuleiro]
