@@ -6,17 +6,24 @@ class Peca:
     def __init__(self, tipo, posicao):
         self.tipo = tipo
         self.formas = {
-            "I": [["....", "####", "....", "...."]],
-            "O": [["##", "##"]],
-            "T": [[".#.", "###", "..."]],
-            "S": [[".##", "##.", "..."]],
-            "Z": [["##.", ".##", "..."]],
-            "J": [["#..", "###", "..."]],
-            "L": [["..#", "###", "..."]],
-        }
+            "I": [["....", "####", "....", "...."], [".#..", ".#..", ".#..", ".#.."], ["....", "....", "####", "...."], ["..#.", "..#.", "..#.", "..#."]],
+            "O": [["##", "##"], ["##", "##"], ["##", "##"], ["##", "##"]],
+            "T": [[".#.", "###", "..."], [".#.", ".##", ".#."], ["...", "###", ".#."], [".#.", "##.", ".#."]],
+            "S": [[".##", "##.", "..."], [".#.", ".##", "..#"], ["...", ".##", "##.."]],
+            "Z": [["##.", ".##", "..."], [".#.", "##.", "#.."], ["...", "##.", ".##"], [".#.", "##.", "#.."]],
+            "J": [["#..", "###", "..."], [".##", ".#.", ".#."], ["...", "###", "..#"], [".#.", ".#.", "##."]],
+            "L": [["..#", "###", "..."], [".#.", ".#.", ".##"], ["...", "###", "#.."], ["##.", ".#.", ".#."]],
+        }   
         self.rotacao = 0
         self.matriz = self.formas[self.tipo][self.rotacao]
         self.x, self.y = 0, posicao
+
+    def rotacionar(self, sentido):
+        if(sentido == "R"):
+            self.rotacao = (self.rotacao + 1) % 4
+        elif(sentido == "L"):
+            self.rotacao = (self.rotacao + 3) % 4
+        self.matriz = self.formas[self.tipo][self.rotacao]
 
 class Partida:
     def __init__(self, linhas, colunas):
@@ -44,6 +51,16 @@ class Partida:
                     if nx >= self.linhas or ny < 0 or ny >= self.colunas or self.tabuleiro[nx][ny] == "#":
                         return False
         return True
+    
+    def rotacionar_peca(self, posicao):
+        antiga_matriz = self.peca_atual.matriz
+        antiga_rotacao = self.peca_atual.rotacao
+        self.peca_atual.rotacionar(posicao)
+
+        if not self._pode_mover(0, 0):
+            self.peca_atual.matriz = antiga_matriz
+            self.peca_atual.rotacao = antiga_rotacao
+
 
     def _fixar_peca(self):
         for i, row in enumerate(self.peca_atual.matriz):
@@ -82,15 +99,14 @@ class Jogo:
                 self.partida.mover_peca(0, 1)
             elif key == "s":
                 self.partida.mover_peca(1, 0)
+            elif key == "w":
+                self.partida.rotacionar_peca("R")
+            elif key == "e":
+                self.partida.rotacionar_peca("L")
             elif key == "q":
                 print("Saindo do jogo.")
                 return
             os.system('cls||clear')
-
-
-        self.partida.imprimir_tabuleiro()
-
-
 
 def iniciar_partida():
     linhas = int(input("Digite o número de linhas da tela do jogo: "))
