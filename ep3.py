@@ -89,7 +89,7 @@ class Jogo:
     def iniciar(self):
         os.system('cls||clear')
         while True:
-            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar, 'q' = Sair")
+            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'q' = Sair")
             self.partida.imprimir_tabuleiro()
             key = readchar.readkey()
 
