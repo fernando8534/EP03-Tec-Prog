@@ -1,12 +1,11 @@
-import os
-import random
-import readchar
+import os, random, readchar, pickle
+from datetime import datetime
 
 class Peca:
     def __init__(self, tipo, posicao):
         self.tipo = tipo
         self.formas = {
-            #Aqui é um dicionario com de todas as peças com as 4 possíveis rotações delas, sendo a da posição 0 a padrão.
+            #Aqui é um dicionário de todas as peças com as 4 possíveis rotações delas, sendo a da posição 0 a padrão.
             "I": [["....", "IIII", "....", "...."], [".I..", ".I..", ".I..", ".I.."], ["....", "....", "IIII", "...."], ["..I.", "..I.", "..I.", "..I."]],
             "O": [["OO", "OO"], ["OO", "OO"], ["OO", "OO"], ["OO", "OO"]],
             "T": [[".T.", "TTT", "..."], [".T.", ".TT", ".T."], ["...", "TTT", ".T."], [".T.", "TT.", ".T."]],
@@ -31,14 +30,22 @@ class Peca:
         return self.tipo
 
 class Partida:
-    def __init__(self, linhas, colunas):
+    def __init__(self, linhas, colunas, jogador, tabuleiro=None, peca_atual=None, pontuacao=None):
         self.linhas = linhas
         self.colunas = colunas
-        #Gera o tabuleiro vazio
-        self.tabuleiro = [["." for _ in range(colunas)] for _ in range(linhas)]
-        self.peca_atual = self._gerar_peca()
+        self.jogador = jogador
         self.game_over = False
-        self.pontuacao = 0
+        if tabuleiro is not None:
+            #gera um tabuleiro já preenchido, para jogos previamente salvos
+            self.tabuleiro = tabuleiro
+            self.peca_atual = peca_atual
+            self.pontuacao = pontuacao
+        else:
+            #Gera o tabuleiro vazio, para jogos novos
+            self.tabuleiro = [["." for _ in range(colunas)] for _ in range(linhas)]
+            self.peca_atual = self._gerar_peca()
+            self.pontuacao = 0
+        
 
     def _gerar_peca(self):
         #Gera a peça aleatória
@@ -104,16 +111,26 @@ class Partida:
         
         for row in tabuleiro_temporario:
             print("".join(row))
+
+    def salvar_partida(self):
+        horario = datetime.now().strftime("%d-%m-%Y-%H:%M")
+        nomeArq = self.jogador + "-" + horario + ".pkl"
+        with open(nomeArq, 'wb') as a:
+            pickle.dump(Partida(self.linhas, self.colunas, self.jogador, self.tabuleiro, self.peca_atual, self.pontuacao), a)
         
 class Jogo:
-    def __init__(self, linhas, colunas, jogador):
-        self.partida = Partida(linhas, colunas)
+    def __init__(self, linhas, colunas, jogador, tabuleiro=None, peca_atual=None, pontuacao=None):
+        if tabuleiro is not None:
+            self.partida = Partida(linhas, colunas, jogador, tabuleiro, peca_atual, pontuacao)
+        else:
+            self.partida = Partida(linhas, colunas, jogador)
 
     def iniciar(self):
+        salvar = False
         os.system('cls||clear')
         while not(self.partida.game_over):
             self.partida.imprimir_tabuleiro()
-            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'q' = Sair")
+            print("Controles: 'a' = Esquerda, 'd' = Direita, 's' = Baixo, 'w' = Rotacionar Horário, 'e' = Rotacionar Anti-Horário, 'y' = Salvar Jogo, 'q' = Sair")
             print("Pontuação = ", self.partida.pontuacao)
             key = readchar.readkey()
             if key == "a":
@@ -126,15 +143,20 @@ class Jogo:
                 self.partida.rotacionar_peca("R")
             elif key == "e":
                 self.partida.rotacionar_peca("L")
+            elif key == "y":
+                self.partida.salvar_partida()
+                salvar = True
+                break
             elif key == "q":
                 print("Saindo do jogo. \n")
                 self.partida.game_over = True
             os.system('cls||clear')
-
-        self.partida.imprimir_tabuleiro()
-        print("Fim de partida!")
-        print("Pontuação final: ", self.partida.pontuacao, "\n")
-
+        if salvar:
+            print("Partida salva!\n")
+        else:
+            self.partida.imprimir_tabuleiro()
+            print("Fim de partida!")
+            print("Pontuação final: ", self.partida.pontuacao, "\n")
 
 class Ranking:
     def __init__(self):
@@ -155,19 +177,53 @@ class Ranking:
             else:
                 print(i + 1, ". ", self.rank[i][0], " ", self.rank[i][1], sep="")
 
+def iniciar_partida(partida_salva=None):
+    if partida_salva is not None:
+        #inicia um jogo já salvo
+        with open(partida_salva, 'rb') as a:
+            partida_salva = pickle.load(a)
+        jogador = partida_salva.jogador
+        linhas = partida_salva.linhas
+        colunas = partida_salva.colunas
+        tabuleiro = partida_salva.tabuleiro
+        peca_atual = partida_salva.peca_atual
+        pontuacao = partida_salva.pontuacao
+        jogo = Jogo(linhas, colunas, jogador, tabuleiro, peca_atual, pontuacao)
 
-def iniciar_partida():
-    jogador = input("Digite o nome do jogador: ")
-    linhas = int(input("Digite o número de linhas da tela do jogo: "))
-    colunas = int(input("Digite o número de colunas da tela do jogo: "))
-    jogo = Jogo(linhas, colunas, jogador)
+    else:
+        #inicia uma nova partida
+        jogador = input("Digite o nome do jogador: ")
+        linhas = int(input("Digite o número de linhas da tela do jogo: "))
+        colunas = int(input("Digite o número de colunas da tela do jogo: "))
+        jogo = Jogo(linhas, colunas, jogador)
+    
     jogo.iniciar()
     rank.atualizar_ranking(jogador, jogo.partida.pontuacao)
     
 def carregar_partida():
     os.system('cls||clear')
-    print("Hello world")
-
+    caminho_pasta = '.' #indica a pasta atual
+    arqs_pkl = [arq for arq in os.listdir(caminho_pasta) if arq.endswith('.pkl')]
+    if (len(arqs_pkl) == 0):
+        print("Não há partidas salvas.\n")
+    else:
+        print("Escolha uma partida para carregar:\n")
+        print(' ')
+        for indice, arq in enumerate(arqs_pkl):
+            print(f"{indice + 1}. {arq}")
+        print(' ')
+        try:
+            escolha = int(input("Insira o índice correspondente à partida salva: "))
+            print(' ')
+            if 1 <= escolha <= len(arqs_pkl):
+                arq_escolhido = arqs_pkl[escolha - 1]
+                iniciar_partida(arq_escolhido)
+            else:
+                print("O índice selecionado não existe.")
+        except ValueError:
+            print("Escolha inválida, tente novamente:\n")
+            print(" ")
+            
 def ver_melhores_pontuacoes():
     os.system('cls||clear')
     print("*** Jogo Textris - Melhores pontuações ***")
