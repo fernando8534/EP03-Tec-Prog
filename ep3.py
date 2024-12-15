@@ -120,13 +120,14 @@ class Partida:
         
 class Jogo:
     def __init__(self, linhas, colunas, jogador, tabuleiro=None, peca_atual=None, pontuacao=None):
+        self.salvar = False
         if tabuleiro is not None:
             self.partida = Partida(linhas, colunas, jogador, tabuleiro, peca_atual, pontuacao)
         else:
             self.partida = Partida(linhas, colunas, jogador)
 
     def iniciar(self):
-        salvar = False
+        self.salvar = False
         os.system('cls||clear')
         while not(self.partida.game_over):
             self.partida.imprimir_tabuleiro()
@@ -145,18 +146,21 @@ class Jogo:
                 self.partida.rotacionar_peca("L")
             elif key == "y":
                 self.partida.salvar_partida()
-                salvar = True
+                self.salvar = True
                 break
             elif key == "q":
                 print("Saindo do jogo. \n")
                 self.partida.game_over = True
             os.system('cls||clear')
-        if salvar:
+        if self.salvar:
             print("Partida salva!\n")
         else:
             self.partida.imprimir_tabuleiro()
             print("Fim de partida!")
             print("Pontuação final: ", self.partida.pontuacao, "\n")
+
+    def jogo_salvo(self):
+        return self.salvar
 
 class Ranking:
     def __init__(self):
@@ -198,7 +202,8 @@ def iniciar_partida(partida_salva=None):
         jogo = Jogo(linhas, colunas, jogador)
     
     jogo.iniciar()
-    rank.atualizar_ranking(jogador, jogo.partida.pontuacao)
+    if(not(jogo.jogo_salvo())):
+        rank.atualizar_ranking(jogador, jogo.partida.pontuacao)
     
 def carregar_partida():
     os.system('cls||clear')
@@ -242,7 +247,8 @@ while(not(Sair)):
     print("- <s> para sair do jogo")
     entrada = input("Digite a opção desejada: ")
     if(entrada != "i" and entrada != "c" and entrada != "p" and entrada != "s"):
-        print("Entrada inválida, tente novamente")
+        os.system('cls||clear')
+        print("*** Entrada inválida, tente novamente ***")
     if entrada == "i":
         iniciar_partida()
     elif entrada == "c":
