@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """!
 @file ep3.py
 @brief Um arquivo que implementa uma versão do jogo Tetris chamada Textris
