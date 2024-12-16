@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, random, readchar, pickle, datetime
 
-
 class Peca:
     """
     Classe: Peca
